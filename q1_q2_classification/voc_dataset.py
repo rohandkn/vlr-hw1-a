@@ -68,6 +68,12 @@ class VOCDataset(Dataset):
             # The difficult attribute specifies whether a class is ambiguous and by setting its weight to zero it does not contribute to the loss during training 
             weight_vec = torch.ones(20)
 
+            for obj in tree.findall('object'):
+                ind = self.INV_CLASS[obj.find('name').text]
+                class_vec[ind] = 1
+
+                w_ind = int(obj.find('difficult').text)
+                weight_vec[ind] = w_ind
             # TODO insert your code here
 
             label_list.append((class_vec, weight_vec))
@@ -98,7 +104,8 @@ class VOCDataset(Dataset):
 
         trans = transforms.Compose([
             transforms.Resize(self.size),
-            *self.get_random_augmentations(),
+            transforms.Resize((self.size,self.size)),
+            #*self.get_random_augmentations(),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.457, 0.407], std=[0.5, 0.5, 0.5]),
         ])

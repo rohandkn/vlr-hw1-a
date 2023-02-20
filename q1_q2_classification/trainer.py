@@ -38,7 +38,6 @@ def train(args, model, optimizer, scheduler=None, model_name='model'):
     for epoch in range(args.epochs):
         for batch_idx, (data, target, wgt) in enumerate(train_loader):
             data, target, wgt = data.to(args.device), target.to(args.device), wgt.to(args.device)
-
             optimizer.zero_grad()
             output = model(data)
             
@@ -46,7 +45,7 @@ def train(args, model, optimizer, scheduler=None, model_name='model'):
             # This function should take in network `output`, ground-truth `target`, weights `wgt` and return a single floating point number
             # You are NOT allowed to use any pytorch built-in functions
             # Remember to take care of underflows / overflows when writing your function
-            loss = 0
+            loss = torch.mean((output-target)**2)
 
             loss.backward()
             
