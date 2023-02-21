@@ -47,7 +47,7 @@ def train(args, model, optimizer, scheduler=None, model_name='model'):
             # You are NOT allowed to use any pytorch built-in functions
             # Remember to take care of underflows / overflows when writing your function
             crit = torch.nn.CrossEntropyLoss()
-            loss = crit(target, output)
+            loss = crit(output, target)
 
             loss.backward()
             
