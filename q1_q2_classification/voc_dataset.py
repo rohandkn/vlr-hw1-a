@@ -75,7 +75,7 @@ class VOCDataset(Dataset):
                 class_vec[ind] = 1
 
                 w_ind = int(obj.find('difficult').text)
-                weight_vec[ind] = (1+w_ind)%2
+                weight_vec[ind] = 0 if w_ind else 1
             # TODO insert your code here
             label_list.append((class_vec, weight_vec))
 
