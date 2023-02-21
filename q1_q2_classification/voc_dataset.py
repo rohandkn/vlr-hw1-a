@@ -10,6 +10,8 @@ import torch.nn
 from PIL import Image
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset
+from random import randrange
+import random
 
 
 class VOCDataset(Dataset):
@@ -86,7 +88,17 @@ class VOCDataset(Dataset):
         # Some commonly used ones are random crops, flipping, rotation
         # You are encouraged to read the docs https://pytorch.org/vision/stable/transforms.html
         # Depending on the augmentation you use, your final image size will change and you will have to write the correct value of `flat_dim` in line 46 in simple_cnn.py
-        pass
+        trans = []
+        full = [transforms.RandomHorizontalFlip(), 
+                transforms.RandomVerticalFlip(),
+                transforms.RandomRotation((1, 90))]
+        numToGen = randrange(len(full))
+        for i in range(0,numToGen):
+            adding = random.choice(full)
+            trans.append(adding)
+            full.remove(adding)
+        trans.append(transforms.Resize((self.size,self.size)))
+        return trans
 
     def __getitem__(self, index):
         """
@@ -101,16 +113,9 @@ class VOCDataset(Dataset):
 
         img = Image.open(fpath)
 
-        rand = transforms.RandomApply([
-                transforms.RandomHorizontalFlip(), 
-                transforms.RandomVerticalFlip(),
-            ])
-
         trans = transforms.Compose([
             transforms.Resize(self.size),
-            transforms.Resize((self.size,self.size)),
-            #*self.get_random_augmentations(),
-            rand,
+            *self.get_random_augmentations(),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.457, 0.407], std=[0.5, 0.5, 0.5]),
         ])

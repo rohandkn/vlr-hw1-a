@@ -22,7 +22,7 @@ if __name__ == "__main__":
          use_cuda=True,
          val_every=70,
          lr=.2,# TODO,
-         batch_size=128,# TODO,
+         batch_size=512,# TODO,
          step_size=2,# TODO,
          gamma=.05# TODO
     )
