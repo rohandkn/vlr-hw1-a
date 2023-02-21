@@ -21,10 +21,10 @@ if __name__ == "__main__":
          inp_size=64,
          use_cuda=True,
          val_every=70,
-         lr=.2,# TODO,
-         batch_size=512,# TODO,
-         step_size=2,# TODO,
-         gamma=.05# TODO
+         lr=.1,# TODO,
+         batch_size=128,# TODO,
+         step_size=5,# TODO,
+         gamma=.01# TODO
     )
 
     print(args)

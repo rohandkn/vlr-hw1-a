@@ -91,7 +91,13 @@ class VOCDataset(Dataset):
         trans = []
         full = [transforms.RandomHorizontalFlip(), 
                 transforms.RandomVerticalFlip(),
-                transforms.RandomRotation((1, 90))]
+                transforms.RandomRotation((1, 90)),
+                transforms.CenterCrop(24),
+                transforms.FiveCrop(24),
+                transforms.RandomAffine((1,90)),
+                ]
+        if (self.split != 'train'):
+            return [transforms.Resize((self.size,self.size))]
         numToGen = randrange(len(full))
         for i in range(0,numToGen):
             adding = random.choice(full)
