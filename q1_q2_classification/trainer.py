@@ -7,6 +7,7 @@ import utils
 from voc_dataset import VOCDataset
 
 
+
 def save_this_epoch(args, epoch):
     if args.save_freq > 0 and (epoch+1) % args.save_freq == 0:
         return True
@@ -45,11 +46,13 @@ def train(args, model, optimizer, scheduler=None, model_name='model'):
             # This function should take in network `output`, ground-truth `target`, weights `wgt` and return a single floating point number
             # You are NOT allowed to use any pytorch built-in functions
             # Remember to take care of underflows / overflows when writing your function
-            loss = torch.mean((output-target)**2)
+            crit = torch.nn.CrossEntropyLoss()
+            loss = crit(target, output)
 
             loss.backward()
             
             if cnt % args.log_every == 0:
+                print("pre")
                 writer.add_scalar("Loss/train", loss.item(), cnt)
                 print('Train Epoch: {} [{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, cnt, 100. * batch_idx / len(train_loader), loss.item()))
                 
