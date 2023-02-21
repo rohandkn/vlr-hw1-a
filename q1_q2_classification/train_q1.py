@@ -19,12 +19,12 @@ if __name__ == "__main__":
     args = ARGS(
          epochs=10,
          inp_size=64,
-         use_cuda=True,
+         use_cuda=False,
          val_every=70,
          lr=.1,# TODO,
-         batch_size=128,# TODO,
+         batch_size=512,# TODO,
          step_size=5,# TODO,
-         gamma=.01# TODO
+         gamma=.1# TODO
     )
 
     print(args)
