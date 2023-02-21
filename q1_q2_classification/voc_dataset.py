@@ -101,10 +101,16 @@ class VOCDataset(Dataset):
 
         img = Image.open(fpath)
 
+        rand = transforms.RandomApply([
+                transforms.RandomHorizontalFlip(), 
+                transforms.RandomVerticalFlip(),
+            ])
+
         trans = transforms.Compose([
             transforms.Resize(self.size),
             transforms.Resize((self.size,self.size)),
             #*self.get_random_augmentations(),
+            rand,
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.457, 0.407], std=[0.5, 0.5, 0.5]),
         ])
