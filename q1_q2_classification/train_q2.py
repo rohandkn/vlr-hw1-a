@@ -40,7 +40,7 @@ if __name__ == "__main__":
     args = ARGS(
         epochs=50,
         inp_size=64,
-        use_cuda=False,
+        use_cuda=True,
         val_every=70,
         lr=.001,# TODO,
         batch_size=32,# TODO,
