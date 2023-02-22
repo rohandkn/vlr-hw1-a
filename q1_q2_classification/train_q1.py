@@ -21,7 +21,7 @@ if __name__ == "__main__":
          inp_size=64,
          use_cuda=True,
          val_every=70,
-         lr=.01,# TODO,
+         lr=.001,# TODO,
          batch_size=32,# TODO,
          step_size=5,# TODO,
          gamma=.1# TODO
