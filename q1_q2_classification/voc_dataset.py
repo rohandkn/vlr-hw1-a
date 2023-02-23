@@ -92,7 +92,7 @@ class VOCDataset(Dataset):
         full = [transforms.RandomHorizontalFlip(), 
                 transforms.RandomVerticalFlip(),
                 transforms.RandomRotation(15),
-                transforms.RandomCrop(64),
+                transforms.RandomCrop(self.size),
                 #transforms.FiveCrop(24),
                 #transforms.RandomAffine((1,90)),
                 ]

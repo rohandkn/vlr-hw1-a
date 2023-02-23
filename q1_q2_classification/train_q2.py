@@ -14,7 +14,8 @@ class ResNet(nn.Module):
         super().__init__()
 
         self.resnet = torchvision.models.resnet18(weights='IMAGENET1K_V1')
-        
+        for p in self.resnet.parameters():
+            p.requires_grad = False
         # TODO define a FC layer here to process the features
         self.fc = nn.Linear(1000, 20)
 
@@ -39,13 +40,13 @@ if __name__ == "__main__":
     # You should get a map of around 50 in 50 epochs
     args = ARGS(
         epochs=50,
-        inp_size=64,
+        inp_size=224,
         use_cuda=True,
         val_every=70,
-        lr=.001,# TODO,
-        batch_size=32,# TODO,
-        step_size=5,# TODO,
-        gamma=.1# TODO
+        lr=.00031,# TODO,
+        batch_size=64,# TODO,
+        step_size=3,# TODO,
+        gamma=.9# TODO
     )
 
     
