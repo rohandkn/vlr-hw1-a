@@ -127,6 +127,7 @@ class TestDetectorBackboneWithFPN(unittest.TestCase):
         if _deltas is None:
             self.skipTest("fcos_get_deltas_from_test is not implemented.")
         centerness = fcos_make_centerness_targets(_deltas)
+ 
         self.assertAlmostEqual(rel_error(centerness, expected_centerness), 0.0, places=5)
 
     def test_sigmoid_focal_loss(self):

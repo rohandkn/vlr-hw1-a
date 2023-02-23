@@ -75,6 +75,15 @@ class DetectorBackboneWithFPN(nn.Module):
         # HINT: You have to use `dummy_out_shapes` defined above to decide   #
         # the input/output channels of these layers.                         #
         ######################################################################
+
+        self.c3_conv = nn.Conv2d(dummy_out_shapes[0][1][1], out_channels, 1)
+        self.c4_conv = nn.Conv2d(dummy_out_shapes[1][1][1], out_channels, 1)
+        self.c5_conv = nn.Conv2d(dummy_out_shapes[2][1][1], out_channels, 1)
+
+        self.p3_conv = nn.Conv2d(out_channels, out_channels, 3, padding='same')
+        self.p4_conv = nn.Conv2d(out_channels, out_channels, 3, padding='same')
+        self.p5_conv = nn.Conv2d(out_channels, out_channels, 3, padding='same')
+
         # This behaves like a Python dict, but makes PyTorch understand that
         # there are trainable weights inside it.
         # Add THREE lateral 1x1 conv and THREE output 3x3 conv layers.
@@ -103,8 +112,15 @@ class DetectorBackboneWithFPN(nn.Module):
         # (c3, c4, c5) and FPN conv layers created above.                    #
         # HINT: Use `F.interpolate` to upsample FPN features.                #
         ######################################################################
+        fpn_feats["p3"] = self.c3_conv(backbone_feats["c3"])
+        fpn_feats["p3"] = self.p3_conv(fpn_feats["p3"])
 
-        pass
+        fpn_feats["p4"] = self.c4_conv(backbone_feats["c4"])
+        fpn_feats["p4"] = self.p4_conv(fpn_feats["p4"])
+
+        fpn_feats["p5"] = self.c5_conv(backbone_feats["c5"])
+        fpn_feats["p5"] = self.p5_conv(fpn_feats["p5"])
+
         ######################################################################
         #                            END OF YOUR CODE                        #
         ######################################################################
@@ -154,7 +170,16 @@ class FCOSPredictionNetwork(nn.Module):
         stem_cls = []
         stem_box = []
         # Replace "pass" statement with your code
-        pass
+        last_out_channel = in_channels
+        for num in stem_channels:
+            stem_cls.append(nn.Conv2d(last_out_channel, num, 3, padding='same'))
+            stem_cls.append(nn.ReLU())
+
+            stem_box.append(nn.Conv2d(last_out_channel, num, 3, padding='same'))
+            stem_box.append(nn.ReLU())
+
+            last_out_channel = num
+
 
         # Wrap the layers defined by student into a `nn.Sequential` module:
         self.stem_cls = nn.Sequential(*stem_cls)
@@ -176,9 +201,9 @@ class FCOSPredictionNetwork(nn.Module):
         ######################################################################
 
         # Replace these lines with your code, keep variable names unchanged.
-        self.pred_cls = None  # Class prediction conv
-        self.pred_box = None  # Box regression conv
-        self.pred_ctr = None  # Centerness conv
+        self.pred_cls = nn.Conv2d(last_out_channel, num_classes, 3, padding='same')  # Class prediction conv
+        self.pred_box = nn.Conv2d(last_out_channel, 4, 3, padding='same')  # Box regression conv
+        self.pred_ctr = nn.Conv2d(last_out_channel, 1, 3, padding='same')  # Centerness conv
 
         ######################################################################
         #                           END OF YOUR CODE                         #
@@ -225,6 +250,19 @@ class FCOSPredictionNetwork(nn.Module):
         class_logits = {}
         boxreg_deltas = {}
         centerness_logits = {}
+
+        for key in feats_per_fpn_level:
+            clsStem = self.stem_cls(feats_per_fpn_level[key])
+            boxStem = self.stem_box(feats_per_fpn_level[key])
+
+            class_logits[key] = self.pred_cls(clsStem)
+            boxreg_deltas[key] = self.pred_box(boxStem)
+            centerness_logits[key] = self.pred_ctr(boxStem)
+
+            class_logits[key] = torch.reshape(class_logits[key], (class_logits[key].size()[0],-1,class_logits[key].size()[1]))
+            boxreg_deltas[key] = torch.reshape(boxreg_deltas[key], (boxreg_deltas[key].size()[0],-1,boxreg_deltas[key].size()[1]))
+            centerness_logits[key] = torch.reshape(centerness_logits[key], (centerness_logits[key].size()[0],-1,centerness_logits[key].size()[1]))
+
         ######################################################################
         #                           END OF YOUR CODE                         #
         ######################################################################
