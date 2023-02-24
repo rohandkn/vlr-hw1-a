@@ -43,10 +43,10 @@ if __name__ == "__main__":
         inp_size=224,
         use_cuda=True,
         val_every=70,
-        lr=.00031,# TODO,
-        batch_size=64,# TODO,
-        step_size=3,# TODO,
-        gamma=.9# TODO
+        lr=.0001,# TODO,
+        batch_size=128,# TODO,
+        step_size=50,# TODO,
+        gamma=.5# TODO
     )
 
     

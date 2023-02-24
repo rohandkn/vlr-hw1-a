@@ -210,7 +210,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--visualize_gt", action="store_true")
     parser.add_argument(
-        "--overfit", type=bool, default=True
+        "--overfit", type=bool, default=False
     )
     parser.add_argument(
         "--inference", type=bool, default=False
