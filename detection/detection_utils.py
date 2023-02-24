@@ -258,7 +258,7 @@ def fcos_make_centerness_targets(deltas: torch.Tensor):
     #                             END OF YOUR CODE                           #
     ##########################################################################
 
-    return torch.FloatTensor(centerness)
+    return torch.FloatTensor(centerness).to(deltas.device)
 
 def get_fpn_location_coords(
     shape_per_fpn_level: Dict[str, Tuple],
