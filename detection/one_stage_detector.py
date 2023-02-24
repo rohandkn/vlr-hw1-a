@@ -436,7 +436,6 @@ class FCOS(nn.Module):
         gt_centerness = gt_centerness.view(gt_centerness.shape[0], gt_centerness.shape[1], 1)
 
 
-        print(type(gt_centerness))
         centerness_loss = F.binary_cross_entropy_with_logits(
             pred_ctr_logits, gt_centerness, reduction="none"
         )
@@ -452,9 +451,17 @@ class FCOS(nn.Module):
                 l.append(p)
             classes_label.append(l)
 
+        gt_class_tensor = matched_gt_boxes[:, :, 4].clone()
+        gt_class_tensor = gt_class_tensor.to(torch.int64)
+        gt_class_tensor += 1
+        #import pdb; pdb.set_trace()
+        gt_classes = F.one_hot(gt_class_tensor, num_classes=self.num_classes+1) #(B, N, 21)
+        #import pdb; pdb.set_trace()
+        gt_classes = gt_classes.to(matched_gt_boxes.dtype)
+        gt_classes = gt_classes[:,:,1:] # ignore the first index indication background class
 
         loss_cls = sigmoid_focal_loss(
-            inputs=pred_cls_logits, targets=classes_label)
+            inputs=pred_cls_logits, targets=gt_classes)
 
 
         ######################################################################
