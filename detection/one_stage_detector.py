@@ -331,9 +331,11 @@ class FCOS(nn.Module):
         # logits, deltas, and centerness.                                    #
         ######################################################################
         # Feel free to delete this line: (but keep variable names same)
+        print("backbone")
         backbone_feats = self.backbone(images)
+        print("fin backbone")
         pred_cls_logits, pred_boxreg_deltas, pred_ctr_logits = self.pred_net(backbone_feats)
-
+        print("fin mynet")
         ######################################################################
         # TODO: Get absolute co-ordinates `(xc, yc)` for every location in
         # FPN levels.
@@ -372,20 +374,21 @@ class FCOS(nn.Module):
         # List of dictionaries with keys {"p3", "p4", "p5"} giving matched
         # boxes for locations per FPN level, per image. Fill this list:
         matched_gt_boxes = []
+        print("starting match")
         for box in gt_boxes:
             res = (fcos_match_locations_to_gt(locations_per_fpn_level, self.backbone.fpn_strides, box))
             matched_gt_boxes.append(res)
 
         # Calculate GT deltas for these matched boxes. Similar structure
         # as `matched_gt_boxes` above. Fill this list:
+        print("about to delta")
         matched_gt_deltas = []
         for gt in matched_gt_boxes: 
             tmpDict = {}
             for key in self.backbone.fpn_strides:
                 tmpDict[key] = (fcos_get_deltas_from_locations(locations_per_fpn_level[key], gt[key], self.backbone.fpn_strides[key]))
             matched_gt_boxes.append(tmpDict)
-
-
+        print("fin delta")
 
         # Replace "pass" statement with your code
         ######################################################################
