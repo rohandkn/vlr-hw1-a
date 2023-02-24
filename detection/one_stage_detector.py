@@ -439,7 +439,9 @@ class FCOS(nn.Module):
             pred_ctr_logits, gt_centerness, reduction="none"
         )
         # No loss for background:
-        centerness_loss[center_targ < 0] *= 0.0
+        centerness_loss[gt_centerness < 0] *= 0.0
+
+        loss_ctr = centerness_loss
 
         classes_label = []
         for i in range(0, gt_boxes.size()[0]):
@@ -449,7 +451,7 @@ class FCOS(nn.Module):
             classes_label.append(l)
 
 
-        cls_loss = sigmoid_focal_loss(
+        loss_cls = sigmoid_focal_loss(
             inputs=pred_cls_logits, targets=classes_label)
 
 
