@@ -345,7 +345,7 @@ class FCOS(nn.Module):
         self.shape_per_level = {}
         for key in backbone_feats:
             self.shape_per_level[key] = backbone_feats[key].shape
-        locations_per_fpn_level = get_fpn_location_coords(self.shape_per_level, self.backbone.fpn_strides)
+        locations_per_fpn_level = get_fpn_location_coords(self.shape_per_level, self.backbone.fpn_strides,device=images.device)
 
 
         ######################################################################

@@ -297,6 +297,7 @@ def get_fpn_location_coords(
             for y in range(0, feat_shape[2]):
                 location_coords[level_name].append([x*strides_per_fpn_level[level_name]+strides_per_fpn_level[level_name]/2,y*strides_per_fpn_level[level_name]+strides_per_fpn_level[level_name]/2])
         location_coords[level_name] = torch.FloatTensor(location_coords[level_name])
+        location_coords[level_name] = location_coords[level_name].to(device)
     return location_coords
 
 def class_spec_nms(
