@@ -436,7 +436,7 @@ class FCOS(nn.Module):
         gt_centerness = gt_centerness.view(gt_centerness.shape[0], gt_centerness.shape[1], 1)
 
 
-        print(type(pred_cls_logits))
+        print(type(gt_centerness))
         centerness_loss = F.binary_cross_entropy_with_logits(
             pred_ctr_logits, gt_centerness, reduction="none"
         )
