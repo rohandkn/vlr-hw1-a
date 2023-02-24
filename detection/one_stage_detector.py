@@ -387,7 +387,7 @@ class FCOS(nn.Module):
             tmpDict = {}
             for key in self.backbone.fpn_strides:
                 tmpDict[key] = (fcos_get_deltas_from_locations(locations_per_fpn_level[key], gt[key], self.backbone.fpn_strides[key]))
-            matched_gt_boxes.append(tmpDict)
+            matched_gt_deltas.append(tmpDict)
         print("fin delta")
 
         # Replace "pass" statement with your code

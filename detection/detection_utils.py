@@ -139,63 +139,33 @@ def fcos_get_deltas_from_locations(
     ##########################################################################
     # Set this to Tensor of shape (N, 4) giving deltas (left, top, right, bottom)
     # from the locations to GT box edges, normalized by FPN stride.
-    #deltas = []
+    deltas = []
     
     ##########################################################################
     #                             END OF YOUR CODE                           #
     ##########################################################################
-    # for i in range(0, locations.size()[0]):
-    #     (x,y) = locations[i]
+    for i in range(0, locations.size()[0]):
+        (x,y) = locations[i]
 
-    #     all_neg = True
-    #     for t in gt_boxes[i]:
-    #         if t != -1:
-    #             all_neg = False
-    #     if all_neg:
-    #         deltas.append([-1,-1,-1,-1])
-    #         continue
-    #     x1, y1, x2, y2 = -1,-1,-1,-1
-    #     if len(gt_boxes[i]) == 4:
-    #         x1, y1, x2, y2 = gt_boxes[i]
-    #     else:
-    #         x1, y1, x2, y2, z = gt_boxes[i]
-    #     tmpDelta = [x-x1,y-y1,x2-x,y2-y]
-    #     for i in range(0,4):
-    #         tmpDelta[i] = tmpDelta[i]/stride
+        all_neg = True
+        for t in gt_boxes[i]:
+            if t != -1:
+                all_neg = False
+        if all_neg:
+            deltas.append([-1,-1,-1,-1])
+            continue
+        x1, y1, x2, y2 = -1,-1,-1,-1
+        if len(gt_boxes[i]) == 4:
+            x1, y1, x2, y2 = gt_boxes[i]
+        else:
+            x1, y1, x2, y2, z = gt_boxes[i]
+        tmpDelta = [x-x1,y-y1,x2-x,y2-y]
+        for i in range(0,4):
+            tmpDelta[i] = tmpDelta[i]/stride
 
-    #     deltas.append(tmpDelta)
+        deltas.append(tmpDelta)
 
-    # return torch.FloatTensor(deltas)
-    deltas = None
-
-    # Replace "pass" statement with your code
-    device = locations.device
-    N = locations.shape[0]
-    deltas = torch.zeros(N, 4, device=device)
-    xc = locations[:, 0]
-    yc = locations[:, 1]
-    x1 = gt_boxes[:, 0]
-    y1 = gt_boxes[:, 1]
-    x2 = gt_boxes[:, 2]
-    y2 = gt_boxes[:, 3]
-
-    l = (xc - x1) / stride
-    t = (yc - y1) / stride
-    r = (x2 - xc) / stride
-    b = (y2 - yc) / stride
-
-    deltas = torch.stack((l, t, r, b))
-    deltas = deltas.t()
-
-    # deal with the background cases
-    mask = gt_boxes[:, 0:4]
-    mask = (mask < 0)
-    deltas[mask] = -1
-    ##########################################################################
-    #                             END OF YOUR CODE                           #
-    ##########################################################################
-
-    return deltas
+    return torch.FloatTensor(deltas)
 
 
 def fcos_apply_deltas_to_locations(
