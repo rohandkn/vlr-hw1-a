@@ -96,7 +96,7 @@ class VOCDataset(Dataset):
                 #transforms.FiveCrop(24),
                 #transforms.RandomAffine((1,90)),
                 ]
-        numToGen = 1#randrange(len(full))
+        numToGen = randrange(len(full))
         for i in range(0,numToGen):
             adding = random.choice(full)
             trans.append(adding)

@@ -24,6 +24,8 @@ class ResNet(nn.Module):
         x = self.resnet(x)
         x = self.fc(x)
         return x
+    def embedding(self, x):
+        return self.resnet(x)
 
 
 
