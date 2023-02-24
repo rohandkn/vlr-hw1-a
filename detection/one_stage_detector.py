@@ -541,22 +541,48 @@ class FCOS(nn.Module):
             level_pred_scores = torch.sqrt(
                 level_cls_logits.sigmoid_() * level_ctr_logits.sigmoid_()
             )
-            print(level_pred_scores.size())
+            print(level_pred_scores.shape)
             # Step 1:
-            # Replace "pass" statement with your code
-            pass
+            best_class = []
+            best_prob = []
+            for i in range(0, level_pred_scores.size()[0]):
+                best_class.append(torch.argmax(level_pred_scores[i]))
+                best_prob.append(torch.max(level_pred_scores[i]))
+
             
             # Step 2:
             # Replace "pass" statement with your code
-            pass
+            for i in range(0, best_class.size()[0]):
+                if best_prob[i] < test_score_thresh:
+                    best_prob[i] = -1
+                    best_class[i] = -1
 
-            # Step 3:
-            # Replace "pass" statement with your code
-            pass
+
+            delt = []
+            loc = []
+            for i in range(0, level_deltas.size()[0]):
+                if (best_prob[i] != -1):
+                    delt.append(level_deltas[i])
+                    loc.append(level_locations[i])
+
+            box_pred = fcos_apply_deltas_to_locations(
+                delt, 
+                loc, 
+                stride=self.backbone.fpn_strides[level_name]
+            )
 
             # Step 4: Use `images` to get (height, width) for clipping.
             # Replace "pass" statement with your code
-            pass
+            h = images.shape[2]
+            w = images.shape[3]
+
+            x = box_pred[:, 0:4:2]
+            y = box_pred[:, 1:5:2]
+
+            x = torch.clamp(x, min=0, max=w)
+            y = torch.clamp(y, min=0, max=h)
+            box_pred[:, 0:4:2] = x
+            box_pred[:, 1:5:2] = y
 
             ##################################################################
             #                          END OF YOUR CODE                      #
