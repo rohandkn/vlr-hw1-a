@@ -429,10 +429,14 @@ class FCOS(nn.Module):
         # No loss for background:
         loss_box[matched_gt_deltas < 0] *= 0.0
 
-        center_targ = fcos_make_centerness_targets(matched_gt_deltas)
+        gt_centerness = torch.zeros(B, N, device=device)
+        for i, matched_gt_deltas_i in enumerate(matched_gt_deltas):
+            gt_centerness[i] = fcos_make_centerness_targets(matched_gt_deltas_i)
+        
+        gt_centerness = gt_centerness.view(gt_centerness.shape[0], gt_centerness.shape[1], 1)
 
         centerness_loss = F.binary_cross_entropy_with_logits(
-            pred_ctr_logits, center_targ, reduction="none"
+            pred_ctr_logits, gt_centerness, reduction="none"
         )
         # No loss for background:
         centerness_loss[center_targ < 0] *= 0.0
