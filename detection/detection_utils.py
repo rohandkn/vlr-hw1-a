@@ -165,7 +165,7 @@ def fcos_get_deltas_from_locations(
 
         deltas.append(tmpDelta)
 
-    return torch.FloatTensor(deltas)
+    return torch.FloatTensor(deltas).to(location.device)
 
 
 def fcos_apply_deltas_to_locations(
