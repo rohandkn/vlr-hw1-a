@@ -421,17 +421,15 @@ class FCOS(nn.Module):
         ######################################################################
         # Feel free to delete this line: (but keep variable names same)
         loss_cls, loss_box, loss_ctr = None, None, None
-        lab_gt_deltas = fcos_get_deltas_from_locations(
-            dummy_locations, dummy_gt_boxes, stride=32
-        )
+   
 
         loss_box = 0.25 * F.l1_loss(
-                pred_boxreg_deltas, lab_gt_deltas, reduction="none"
+                pred_boxreg_deltas, matched_gt_deltas, reduction="none"
             )
         # No loss for background:
-        loss_box[dummy_gt_deltas < 0] *= 0.0
+        loss_box[matched_gt_deltas < 0] *= 0.0
 
-        center_targ = fcos_make_centerness_targets(lab_gt_deltas)
+        center_targ = fcos_make_centerness_targets(matched_gt_deltas)
 
         centerness_loss = F.binary_cross_entropy_with_logits(
             pred_ctr_logits, center_targ, reduction="none"
