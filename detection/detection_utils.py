@@ -239,26 +239,48 @@ def fcos_make_centerness_targets(deltas: torch.Tensor):
     #   (max(left, right) * max(top, bottom))
     # )
     ##########################################################################
-    centerness = []
-    for b in range(0, deltas.size()[0]):
-        all_neg = True
-        for t in deltas[b]:
-            if t != -1:
-                all_neg = False
-        if all_neg:
-            centerness.append(-1)
-            continue
+    # centerness = []
+    # for b in range(0, deltas.size()[0]):
+    #     all_neg = True
+    #     for t in deltas[b]:
+    #         if t != -1:
+    #             all_neg = False
+    #     if all_neg:
+    #         centerness.append(-1)
+    #         continue
 
-        one = min(deltas[b][0],deltas[b][2])
-        two = min(deltas[b][1],deltas[b][3])
-        three = max(deltas[b][0],deltas[b][2])
-        four = max(deltas[b][1],deltas[b][3])
-        centerness.append(torch.sqrt((one*two)/(three*four)))
+    #     one = min(deltas[b][0],deltas[b][2])
+    #     two = min(deltas[b][1],deltas[b][3])
+    #     three = max(deltas[b][0],deltas[b][2])
+    #     four = max(deltas[b][1],deltas[b][3])
+    #     centerness.append(torch.sqrt((one*two)/(three*four)))
+    # ##########################################################################
+    # #                             END OF YOUR CODE                           #
+    # ##########################################################################
+
+    # return torch.FloatTensor(centerness).to(deltas.device)
+    centerness = None
+    # Replace "pass" statement with your code
+    device = deltas.device
+    l = deltas[:, 0]
+    t = deltas[:, 1]
+    r = deltas[:, 2]
+    b = deltas[:, 3]
+
+    min_lr = torch.minimum(l, r)
+    min_tb = torch.minimum(t, b)
+    max_lr = torch.maximum(l, r)
+    max_tb = torch.maximum(t, b)
+
+    centerness = torch.sqrt(min_lr * min_tb / (max_lr * max_tb))
+    centerness = centerness.to(device)
+    mask = (l < 0)
+    centerness[mask] = -1.0
     ##########################################################################
     #                             END OF YOUR CODE                           #
     ##########################################################################
 
-    return torch.FloatTensor(centerness).to(deltas.device)
+    return centerness
 
 def get_fpn_location_coords(
     shape_per_fpn_level: Dict[str, Tuple],
