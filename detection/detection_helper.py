@@ -212,16 +212,13 @@ def train_detector(
     detector.train()
 
     for _iter in range(max_iters):
-        print("current iter: "+str(_iter))
         # Ignore first arg (image path) during training.
         _, images, gt_boxes = next(train_loader)
 
         images = images.to(device)
         gt_boxes = gt_boxes.to(device)
-        print("almost detector")
         # Dictionary of loss scalars.
         losses = detector(images, gt_boxes)
-        print("got losses")
 
         # Ignore keys like "proposals" in RPN.
         losses = {k: v for k, v in losses.items() if "loss" in k}
@@ -229,7 +226,6 @@ def train_detector(
         optimizer.zero_grad()
         total_loss = sum(losses.values())
         total_loss.backward()
-        print("got backward")
         optimizer.step()
         lr_scheduler.step()
         for key, value in losses.items():
