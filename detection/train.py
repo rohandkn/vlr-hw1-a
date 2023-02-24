@@ -40,7 +40,7 @@ NUM_CLASSES = 20
 BATCH_SIZE = 16
 IMAGE_SHAPE = (224, 224)
 NUM_WORKERS = 12
-DATASET_PATH = "../data"
+DATASET_PATH = "../q1_q2_classification/data"
 
 @dataclass
 class HyperParameters:
