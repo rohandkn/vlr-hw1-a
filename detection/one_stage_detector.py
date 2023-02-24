@@ -429,7 +429,7 @@ class FCOS(nn.Module):
         # No loss for background:
         loss_box[matched_gt_deltas < 0] *= 0.0
 
-        gt_centerness = torch.zeros(matched_gt_deltas.shape[0], matched_gt_deltas.shape[1], device=device)
+        gt_centerness = torch.zeros(matched_gt_deltas.shape[0], matched_gt_deltas.shape[1], device=images.device)
         for i, matched_gt_deltas_i in enumerate(matched_gt_deltas):
             gt_centerness[i] = fcos_make_centerness_targets(matched_gt_deltas_i)
         
