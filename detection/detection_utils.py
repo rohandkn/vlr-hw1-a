@@ -112,60 +112,56 @@ def fcos_get_deltas_from_locations(
     Compute distances from feature locations to GT box edges. These distances
     are called "deltas" - `(left, top, right, bottom)` or simply `LTRB`. The
     feature locations and GT boxes are given in absolute image co-ordinates.
-
     These deltas are used as targets for training FCOS to perform box regression
     and centerness regression. They must be "normalized" by the stride of FPN
     feature map (from which feature locations were computed, see the function
     `get_fpn_location_coords`). If GT boxes are "background", then deltas must
     be `(-1, -1, -1, -1)`.
-
     NOTE: This transformation function should not require GT class label. Your
     implementation must work for GT boxes being `(N, 4)` or `(N, 5)` tensors -
     without or with class labels respectively. You may assume that all the
     background boxes will be `(-1, -1, -1, -1)` or `(-1, -1, -1, -1, -1)`.
-
     Args:
         locations: Tensor of shape `(N, 2)` giving `(xc, yc)` feature locations.
         gt_boxes: Tensor of shape `(N, 4 or 5)` giving GT boxes.
         stride: Stride of the FPN feature map.
-
     Returns:
         torch.Tensor
             Tensor of shape `(N, 4)` giving deltas from feature locations, that
             are normalized by feature stride.
     """
-    ##########################################################################
-    # TODO: Implement the logic to get deltas from feature locations.        #
-    ##########################################################################
-    # Set this to Tensor of shape (N, 4) giving deltas (left, top, right, bottom)
-    # from the locations to GT box edges, normalized by FPN stride.
-    deltas = []
     
-    ##########################################################################
-    #                             END OF YOUR CODE                           #
-    ##########################################################################
-    for i in range(0, locations.size()[0]):
-        (x,y) = locations[i]
+    N = locations.shape[0]
+    deltas = torch.zeros(N, 4, device=locations.device)
+    
+    xc = locations[:, 0]
+    yc = locations[:, 1]
+    x1 = gt_boxes[:, 0]
+    y1 = gt_boxes[:, 1]
+    x2 = gt_boxes[:, 2]
+    y2 = gt_boxes[:, 3]
+    
+    l = (xc - x1)/stride
+    t = (yc - y1)/stride
+    r = (x2 - xc)/stride
+    b = (y2 - yc)/stride
 
-        all_neg = True
-        for t in gt_boxes[i]:
-            if t != -1:
-                all_neg = False
-        if all_neg:
-            deltas.append([-1,-1,-1,-1])
-            continue
-        x1, y1, x2, y2 = -1,-1,-1,-1
-        if len(gt_boxes[i]) == 4:
-            x1, y1, x2, y2 = gt_boxes[i]
-        else:
-            x1, y1, x2, y2, z = gt_boxes[i]
-        tmpDelta = [x-x1,y-y1,x2-x,y2-y]
-        for i in range(0,4):
-            tmpDelta[i] = tmpDelta[i]/stride
+    if(gt_boxes.shape[1]==5):
+        c = gt_boxes[:, 4]
+    else:
+        c = gt_boxes[:, 0]
+    
+    deltas[:, 0] = l
+    deltas[:, 1] = t
+    deltas[:, 2] = r
+    deltas[:, 3] = b
+    
+    deltas[c == -1, 0] = -1
+    deltas[c == -1, 1] = -1
+    deltas[c == -1, 2] = -1
+    deltas[c == -1, 3] = -1
 
-        deltas.append(tmpDelta)
-
-    return torch.FloatTensor(deltas).to(locations.device)
+    return deltas
 
 
 def fcos_apply_deltas_to_locations(
@@ -319,14 +315,12 @@ def get_fpn_location_coords(
     represents the center of the receptive field of this location. We need to
     do this for having a uniform co-ordinate representation of all the locations
     across FPN levels, and GT boxes.
-
     Args:
         shape_per_fpn_level: Shape of the FPN feature level, dictionary of keys
             {"p3", "p4", "p5"} and feature shapes `(B, C, H, W)` as values.
         strides_per_fpn_level: Dictionary of same keys as above, each with an
             integer value giving the stride of corresponding FPN level.
             See `backbone.py` for more details.
-
     Returns:
         Dict[str, torch.Tensor]
             Dictionary with same keys as `shape_per_fpn_level` and values as
@@ -336,16 +330,46 @@ def get_fpn_location_coords(
 
     # Set these to `(N, 2)` Tensors giving absolute location co-ordinates.
     location_coords = {
-        level_name: [] for level_name, _ in shape_per_fpn_level.items()
+        level_name: None for level_name, _ in shape_per_fpn_level.items()
     }
 
     for level_name, feat_shape in shape_per_fpn_level.items():
         level_stride = strides_per_fpn_level[level_name]
-        for x in range(0, feat_shape[3]):
-            for y in range(0, feat_shape[2]):
-                location_coords[level_name].append([x*strides_per_fpn_level[level_name]+strides_per_fpn_level[level_name]/2,y*strides_per_fpn_level[level_name]+strides_per_fpn_level[level_name]/2])
-        location_coords[level_name] = torch.FloatTensor(location_coords[level_name])
-        location_coords[level_name] = location_coords[level_name].to(device)
+
+        ######################################################################
+        # TODO: Implement logic to get location co-ordinates below.          #
+        ######################################################################
+        # Replace "pass" statement with your code
+        H = feat_shape[2]
+        W = feat_shape[3]
+        # xc = torch.arange(H, dtype=dtype, device=device)
+        # yc = torch.arange(W, dtype=dtype, device=device)
+
+        # xc = (xc + 0.5) * level_stride
+        # yc = (yc + 0.5) * level_stride
+        # image_cord = torch.zeros(H*W, 2, dtype=dtype, device=device)
+        
+        # count = 0
+        # for i in xc:
+        #     for j in yc:
+        #         image_cord[count, 0] = i
+        #         image_cord[count, 1] = j
+        #         count += 1
+
+        xc = torch.arange(H, dtype=dtype, device=device).expand(W, H).t()
+        yc = torch.arange(W, dtype=dtype, device=device).expand(H, W)
+
+        xc = (xc + 0.5) * level_stride
+        yc = (yc + 0.5) * level_stride
+        image_cord = torch.stack((xc, yc))
+        image_cord = image_cord.view(2, -1)
+        image_cord = image_cord.t()
+
+
+        location_coords[level_name] = image_cord
+        ######################################################################
+        #                             END OF YOUR CODE                       #
+        ######################################################################
     return location_coords
 
 def class_spec_nms(

@@ -146,8 +146,8 @@ def main(args):
         )
     detector = FCOS(
         num_classes=NUM_CLASSES,
-        fpn_channels=64,
-        stem_channels=[64, 64],
+        fpn_channels=224,
+        stem_channels=[224, 224],
     )
 
     if args.visualize_gt:
@@ -175,7 +175,7 @@ def main(args):
 
         # Re-initialize so this cell is independent from prior cells.
         detector = FCOS(
-            num_classes=NUM_CLASSES, fpn_channels=64, stem_channels=[64, 64]
+            num_classes=NUM_CLASSES, fpn_channels=224, stem_channels=[224, 224]
         )
         detector.to(device=DEVICE)
         detector.load_state_dict(torch.load(weights_path, map_location="cpu"))
