@@ -93,13 +93,14 @@ class VOCDataset(Dataset):
                 transforms.RandomVerticalFlip(),
                 transforms.RandomRotation(15),
                 transforms.RandomCrop(self.size),
-                #transforms.FiveCrop(24),
-                #transforms.RandomAffine((1,90)),
+                None,
+                None
                 ]
-        numToGen = randrange(len(full))
+        numToGen = 1
         for i in range(0,numToGen):
             adding = random.choice(full)
-            trans.append(adding)
+            if adding != None:
+                trans.append(adding)
             full.remove(adding)
         trans.append(transforms.Resize((self.size,self.size)))
         return trans

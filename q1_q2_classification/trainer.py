@@ -5,6 +5,7 @@ import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 import utils
 from voc_dataset import VOCDataset
+import torchvision.transforms as transforms
 
 
 
@@ -22,32 +23,37 @@ def save_model(epoch, model_name, model):
     print("saving model at ", filename)
     torch.save(model, filename)
 
-def sne(test_loader, model):
+def sne(test_loader, model, device):
     count = 0
     features = []
     labels = []
-    for batch_idx, (data, target, wgt) in enumerate(train_loader):
+    for batch_idx, (data, target, wgt) in enumerate(test_loader):
+        data, target, wgt = data.to(device), target.to(device), wgt.to(device)
         features.append(model.embedding(data))
-        labels.append(target)
+        print(model.embedding(data).size())
+        labels.append(torch.argmax(target, dim=1))
+        break
     import numpy as np
     import matplotlib.pyplot as plt
     from sklearn.datasets import load_digits
     from sklearn.manifold import TSNE
 
     # Load data
-    digits = load_digits()
-    X = features
-    y = labels
+    t = transforms.Resize((224,224))
+
+    X = torch.stack(features)[0]
+    y = torch.stack(labels)
 
     # Compute t-SNE
     tsne = TSNE(n_components=2, random_state=0)
-    X_tsne = tsne.fit_transform(X)
+    print(y.size())
+    X_tsne = tsne.fit_transform(X.cpu())
 
     # Plot t-SNE
     plt.figure(figsize=(10, 8))
-    plt.scatter(X_tsne[:, 0], X_tsne[:, 1], c=y, cmap=plt.cm.get_cmap("jet", 10))
-    plt.colorbar(ticks=range(10))
-    plt.title("t-SNE plot of digits dataset")
+    plt.scatter(X_tsne[:, 0], X_tsne[:, 1], c=y.cpu(), cmap=plt.cm.get_cmap("jet", 10))
+    plt.colorbar(ticks=range(100))
+    plt.title("t-SNE plot")
     plt.xlabel("t-SNE dimension 1")
     plt.ylabel("t-SNE dimension 2")
     plt.savefig("plo.png")
@@ -117,5 +123,5 @@ def train(args, model, optimizer, scheduler=None, model_name='model'):
     # Validation iteration
     test_loader = utils.get_data_loader('voc', train=False, batch_size=args.test_batch_size, split='test', inp_size=args.inp_size)
     ap, map = utils.eval_dataset_map(model, args.device, test_loader)
-    sne(test_loader, model)
+    sne(test_loader, model, args.device)
     return ap, map

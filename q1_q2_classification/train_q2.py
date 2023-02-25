@@ -45,10 +45,10 @@ if __name__ == "__main__":
         inp_size=224,
         use_cuda=True,
         val_every=70,
-        lr=.0001,# TODO,
-        batch_size=128,# TODO,
-        step_size=50,# TODO,
-        gamma=.5# TODO
+        lr=.001,# TODO,
+        batch_size=512,# TODO,
+        step_size=10,# TODO,
+        gamma=.6# TODO
     )
 
     
