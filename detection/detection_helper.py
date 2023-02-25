@@ -237,7 +237,9 @@ def train_detector(
                 loss_str += f"[{key}: {value:.3f}]"
             print(loss_str)
             loss_history.append(total_loss.item())
-            
+            if _iter % 500 == 0:
+                print("saved state")
+                torch.save(detector.state_dict(), "fcos_detector-"+str(iter)+".pt")
         writer.close()
     print("Finished training, saving model.")
     torch.save(detector.state_dict(), "fcos_detector.pt")

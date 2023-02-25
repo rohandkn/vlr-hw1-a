@@ -541,11 +541,6 @@ class FCOS(nn.Module):
             #      and width of input image.
             ##################################################################
             # Feel free to delete this line: (but keep variable names same)
-            level_pred_boxes, level_pred_classes, level_pred_scores = (
-                None,
-                None,
-                None,  # Need tensors of shape: (N, 4) (N, ) (N, )
-            )
 
             # Compute geometric mean of class logits and centerness:
             level_pred_scores = torch.sqrt(
@@ -561,7 +556,7 @@ class FCOS(nn.Module):
             
             # Step 2:
             # Replace "pass" statement with your code
-            for i in range(0, best_class.size()[0]):
+            for i in range(0, len(best_class)):
                 if best_prob[i] < test_score_thresh:
                     best_prob[i] = -1
                     best_class[i] = -1
@@ -575,8 +570,8 @@ class FCOS(nn.Module):
                     loc.append(level_locations[i])
 
             box_pred = fcos_apply_deltas_to_locations(
-                delt, 
-                loc, 
+                pred_boxreg_deltas[level_name][0], 
+                locations_per_fpn_level[level_name], 
                 stride=self.backbone.fpn_strides[level_name]
             )
 
@@ -596,8 +591,8 @@ class FCOS(nn.Module):
             ##################################################################
             #                          END OF YOUR CODE                      #
             ##################################################################
-
-            pred_boxes_all_levels.append(level_pred_boxes)
+            level_pred_classes = torch.argmax(level_pred_scores, dim=1)
+            pred_boxes_all_levels.append(box_pred)
             pred_classes_all_levels.append(level_pred_classes)
             pred_scores_all_levels.append(level_pred_scores)
 

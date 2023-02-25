@@ -156,7 +156,7 @@ def main(args):
         return
     
     print("Training model...")
-    if not args.visualize_gt:
+    if False and not args.visualize_gt:
         train_model(detector, train_loader, hyperparams, overfit=args.overfit)
     print("Training complete! Saving loss curve to loss.png...")
     if not args.inference:
@@ -175,7 +175,7 @@ def main(args):
 
         # Re-initialize so this cell is independent from prior cells.
         detector = FCOS(
-            num_classes=NUM_CLASSES, fpn_channels=128, stem_channels=[128, 128]
+            num_classes=NUM_CLASSES, fpn_channels=64, stem_channels=[64, 64]
         )
         detector.to(device=DEVICE)
         detector.load_state_dict(torch.load(weights_path, map_location="cpu"))
@@ -213,10 +213,10 @@ if __name__ == '__main__':
         "--overfit", type=bool, default=False
     )
     parser.add_argument(
-        "--inference", type=bool, default=False
+        "--inference", type=bool, default=True
     )
     parser.add_argument(
-        "--test_inference", type=bool, default=False
+        "--test_inference", type=bool, default=True
     )
     args = parser.parse_args()
     print(args.test_inference)

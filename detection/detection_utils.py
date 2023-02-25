@@ -201,18 +201,44 @@ def fcos_apply_deltas_to_locations(
     # for our use-case because the feature center must lie INSIDE the final  #
     # box. Make sure to clip them to zero.                                   #
     ##########################################################################
-    output_boxes = []
+    #output_boxes = []
 
-    for i in range(0, locations.size()[0]):
-        (x,y) = locations[i]
-        l,t,r,b = deltas[i]
-        l,t,r,b = max(l,0),max(t,0),max(r,0),max(b,0)
-        l,t,r,b = l*stride,t*stride,r*stride,b*stride
-        x1, y1, x2, y2 = x-l,y+b, x+r,y-t
-        tmpDelta = [x1,y2,x2,y1]
-        output_boxes.append(tmpDelta)
+    #for i in range(0, locations.size()[0]):
+    #    (x,y) = locations[i]
+    #    l,t,r,b = deltas[i]
+    #    l,t,r,b = max(l,0),max(t,0),max(r,0),max(b,0)
+    #    l,t,r,b = l*stride,t*stride,r*stride,b*stride
+    #    x1, y1, x2, y2 = x-l,y+b, x+r,y-t
+    #    tmpDelta = [x1,y2,x2,y1]
+    #    output_boxes.append(tmpDelta)
 
-    return torch.FloatTensor(output_boxes)
+    #return torch.FloatTensor(output_boxes)
+    N = deltas.shape[0]
+    output_boxes = torch.zeros(N, 4, device=locations.device)
+
+    xc = locations[:,0]
+    yc = locations[:,1]
+    l = deltas[:, 0]
+    t = deltas[:, 1]
+    r = deltas[:, 2]
+    b = deltas[:, 3]
+
+    l = torch.clamp(l, min=0)
+    t = torch.clamp(t, min=0)
+    r = torch.clamp(r, min=0)
+    b = torch.clamp(b, min=0)
+
+    x1 = xc - l * stride
+    y1 = yc - t * stride
+    x2 = xc + r * stride
+    y2 = yc + b * stride
+
+    output_boxes[:, 0] = x1
+    output_boxes[:, 1] = y1
+    output_boxes[:, 2] = x2
+    output_boxes[:, 3] = y2
+
+    return output_boxes
 
 def fcos_make_centerness_targets(deltas: torch.Tensor):
     """
