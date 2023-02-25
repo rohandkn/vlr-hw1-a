@@ -202,7 +202,7 @@ def main(args):
             dtype=torch.float32,
             output_dir="mAP/input",
         )
-        os.system("cd mAP && python main.py")
+        os.system("cd mAP && python3 main.py")
         print("Output file written to ./mAP/output/mAP.png")
         
 
@@ -216,7 +216,7 @@ if __name__ == '__main__':
         "--inference", type=bool, default=True
     )
     parser.add_argument(
-        "--test_inference", type=bool, default=True
+        "--test_inference", type=bool, default=False
     )
     args = parser.parse_args()
     print(args.test_inference)
