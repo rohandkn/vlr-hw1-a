@@ -543,76 +543,65 @@ class FCOS(nn.Module):
             # Feel free to delete this line: (but keep variable names same)
 
             # Compute geometric mean of class logits and centerness:
-            level_pred_scores = torch.sqrt(
-                level_cls_logits.sigmoid_() * level_ctr_logits.sigmoid_()
-            )
-            # Step 1:
-            best_class = []
-            best_prob = []
-            for i in range(0, level_pred_scores.size()[0]):
-                best_class.append(torch.argmax(level_pred_scores[i]))
-                best_prob.append(torch.max(level_pred_scores[i]))
+            # Gather scores and boxes from all FPN levels in this list. Once
+        # gathered, we will perform NMS to filter highly overlapping predictions.
+            pred_boxes_all_levels = []
+            pred_classes_all_levels = []
+            pred_scores_all_levels = []
 
+            for level_name in locations_per_fpn_level.keys():
+
+                # Get locations and predictions from a single level.
+                # We index predictions by `[0]` to remove batch dimension.
+                level_locations = locations_per_fpn_level[level_name]
+                level_cls_logits = pred_cls_logits[level_name][0]
+                level_deltas = pred_boxreg_deltas[level_name][0]
+                level_ctr_logits = pred_ctr_logits[level_name][0]
+
+                # Compute geometric mean of class logits and centerness:
+                level_pred_scores = torch.sqrt(
+                    level_cls_logits.sigmoid_() * level_ctr_logits.sigmoid_()
+                )
+                # Step 1:
+                level_pred_scores_score= torch.max(level_pred_scores, dim=1).values
+                level_pred_classes = torch.argmax(level_pred_scores, dim=1)
+                level_pred_scores = level_pred_scores_score
+                # Step 2:
+                idx = level_pred_scores < test_score_thresh
+                level_pred_classes[idx] = -1
+                # Step 3:
+                level_pred_boxes = fcos_apply_deltas_to_locations(level_deltas, level_locations, self.backbone.fpn_strides[level_name])
+
+                # Step 4: Use `images` to get (height, width) for clipping.
+                h = images.shape[2]
+                w = images.shape[3]
+                level_pred_boxes[:, 0] = torch.clamp(level_pred_boxes[:, 0], min=0, max=w)
+                level_pred_boxes[:, 1] = torch.clamp(level_pred_boxes[:, 1], min=0, max=h)
+                level_pred_boxes[:, 2] = torch.clamp(level_pred_boxes[:, 2], min=0, max=w)
+                level_pred_boxes[:, 3] = torch.clamp(level_pred_boxes[:, 3], min=0, max=h)
+
+                pred_boxes_all_levels.append(level_pred_boxes)
+                pred_classes_all_levels.append(level_pred_classes)
+                pred_scores_all_levels.append(level_pred_scores)
+
+            # Combine predictions from all levels and perform NMS.
+            pred_boxes_all_levels = torch.cat(pred_boxes_all_levels)
+            pred_classes_all_levels = torch.cat(pred_classes_all_levels)
+            pred_scores_all_levels = torch.cat(pred_scores_all_levels)
+            # STUDENTS: This function depends on your implementation of NMS.
+            keep = class_spec_nms(
+                
+                pred_boxes_all_levels,
+                pred_scores_all_levels,
+                pred_classes_all_levels,
+                iou_threshold=test_nms_thresh,
+            )
+            pred_boxes_all_levels = pred_boxes_all_levels[keep]
+            pred_classes_all_levels = pred_classes_all_levels[keep]
+            pred_scores_all_levels = pred_scores_all_levels[keep]
             
-            # Step 2:
-            # Replace "pass" statement with your code
-            for i in range(0, len(best_class)):
-                if best_prob[i] < test_score_thresh:
-                    best_prob[i] = -1
-                    best_class[i] = -1
-
-
-            delt = []
-            loc = []
-            for i in range(0, level_deltas.size()[0]):
-                if (best_prob[i] != -1):
-                    delt.append(level_deltas[i])
-                    loc.append(level_locations[i])
-
-            box_pred = fcos_apply_deltas_to_locations(
-                pred_boxreg_deltas[level_name][0], 
-                locations_per_fpn_level[level_name], 
-                stride=self.backbone.fpn_strides[level_name]
+            return (
+                pred_boxes_all_levels,
+                pred_classes_all_levels,
+                pred_scores_all_levels,
             )
-
-            # Step 4: Use `images` to get (height, width) for clipping.
-            # Replace "pass" statement with your code
-            h = images.shape[2]
-            w = images.shape[3]
-
-            x = box_pred[:, 0:4:2]
-            y = box_pred[:, 1:5:2]
-
-            x = torch.clamp(x, min=0, max=w)
-            y = torch.clamp(y, min=0, max=h)
-            box_pred[:, 0:4:2] = x
-            box_pred[:, 1:5:2] = y
-
-            ##################################################################
-            #                          END OF YOUR CODE                      #
-            ##################################################################
-            level_pred_classes = torch.argmax(level_pred_scores, dim=1)
-            pred_boxes_all_levels.append(box_pred)
-            pred_classes_all_levels.append(level_pred_classes)
-            pred_scores_all_levels.append(level_pred_scores)
-
-        ######################################################################
-        # Combine predictions from all levels and perform NMS.
-        pred_boxes_all_levels = torch.cat(pred_boxes_all_levels)
-        pred_classes_all_levels = torch.cat(pred_classes_all_levels)
-        pred_scores_all_levels = torch.cat(pred_scores_all_levels)
-
-        keep = class_spec_nms(
-            pred_boxes_all_levels,
-            pred_scores_all_levels,
-            pred_classes_all_levels,
-            iou_threshold=test_nms_thresh,
-        )
-        pred_boxes_all_levels = pred_boxes_all_levels[keep]
-        pred_classes_all_levels = pred_classes_all_levels[keep]
-        pred_scores_all_levels = pred_scores_all_levels[keep]
-        return (
-            pred_boxes_all_levels,
-            pred_classes_all_levels,
-            pred_scores_all_levels,
-        )
