@@ -146,8 +146,8 @@ def main(args):
         )
     detector = FCOS(
         num_classes=NUM_CLASSES,
-        fpn_channels=224,
-        stem_channels=[224, 224],
+        fpn_channels=64,
+        stem_channels=[64,64],
     )
 
     if args.visualize_gt:
@@ -171,11 +171,11 @@ def main(args):
             small_dataset, batch_size=1, pin_memory=True, num_workers=NUM_WORKERS
         )
         # Modify this depending on where you save your weights.
-        weights_path = os.path.join(".", "fcos_detector.pt")
+        weights_path = os.path.join(".", "focs_detector.pt")
 
         # Re-initialize so this cell is independent from prior cells.
         detector = FCOS(
-            num_classes=NUM_CLASSES, fpn_channels=224, stem_channels=[224, 224]
+            num_classes=NUM_CLASSES, fpn_channels=64, stem_channels=[64, 64]
         )
         detector.to(device=DEVICE)
         detector.load_state_dict(torch.load(weights_path, map_location="cpu"))
@@ -196,8 +196,8 @@ def main(args):
             detector,
             val_loader,
             val_dataset.idx_to_class,
-            score_thresh=0.4,
-            nms_thresh=0.6,
+            score_thresh=.0,#0.4,
+            nms_thresh=.0,#0.6,
             device=DEVICE,
             dtype=torch.float32,
             output_dir="mAP/input",
@@ -216,7 +216,7 @@ if __name__ == '__main__':
         "--inference", type=bool, default=True
     )
     parser.add_argument(
-        "--test_inference", type=bool, default=False
+        "--test_inference", type=bool, default=True
     )
     args = parser.parse_args()
     print(args.test_inference)

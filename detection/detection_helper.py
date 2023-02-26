@@ -285,7 +285,7 @@ def inference_with_detector(
         os.mkdir(gt_dir)
 
     all_images = []
-
+    print(output_dir)
     for iter_num, test_batch in enumerate(test_loader):
         image_paths, images, gt_boxes = test_batch
         images = images.to(dtype=dtype, device=device)
@@ -301,6 +301,7 @@ def inference_with_detector(
 
         # Skip current iteration if no predictions were found.
         if pred_boxes.shape[0] == 0:
+            print("no pred")
             continue
 
         # Remove padding (-1) and batch dimension from predicted / GT boxes
@@ -342,6 +343,7 @@ def inference_with_detector(
             image = detection_visualizer(
                 image, idx_to_class, gt_boxes, pred_boxes
             )
+            print("added")
             all_images.append(torch.from_numpy(image))
     
     if output_dir is None:
